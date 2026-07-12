@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# macOS
+.DS_Store
+
+# Project data & generated output (not for publication)
+data/raw/*
+data/processed/*
+data/wind/*
+output/
+
+# keep folder structure with placeholders
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/wind/.gitkeep
