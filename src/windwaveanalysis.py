@@ -60,6 +60,13 @@ class WindWaveAnalysis:
 
         self.lag_table = pd.DataFrame()
 
+        # Порог критерия "возраста волны" (c_p / U10) для разделения
+        # ветрового волнения и зыби. Значение 1.2 — стандартный порог,
+        # используемый в схемах партиционирования спектра (напр. ECMWF
+        # ECWAM): при c_p / U10 выше порога волна движется быстрее, чем
+        # может разгонять локальный ветер, то есть пришла со стороны.
+        self.wave_age_threshold = 1.2
+
     def information(self):
         print()
         print("=" * 60)
@@ -358,6 +365,117 @@ class WindWaveAnalysis:
         plt.close()
 
         print("✓ correlation_matrix.png")
+
+    def classify_sea_state(self):
+        print()
+        print("=" * 60)
+        print("WAVE AGE / SEA STATE")
+        print("=" * 60)
+
+        g = 9.81
+        self.data["wave_phase_speed"] = (
+            g * self.data["peak_period"] / (2 * np.pi)
+        )
+        self.data["wave_age"] = (
+            self.data["wave_phase_speed"] / self.data["wind_speed"]
+        )
+
+        self.data["sea_state"] = np.where(
+            self.data["wave_age"] > self.wave_age_threshold,
+            "Зыбь",
+            "Ветровое волнение",
+        )
+
+        fraction = (
+            self.data["sea_state"].value_counts(normalize=True) * 100
+        )
+
+        print()
+        print(f"Порог возраста волны (c_p / U10) : {self.wave_age_threshold}")
+        print(f"Средний возраст волны            : {self.data['wave_age'].mean():.2f}")
+        print()
+        print(fraction.round(1))
+
+        self.data[
+            [
+                "timestamp",
+                "wind_speed",
+                "peak_period",
+                "wave_phase_speed",
+                "wave_age",
+                "sea_state",
+            ]
+        ].to_csv(self.output_tab / "wave_age.csv", index=False)
+
+        print()
+        print("✓ wave_age.csv")
+
+    def plot_wave_age_timeseries(self):
+        print()
+        print("Plotting wave age...")
+
+        wind_sea = self.data[self.data["sea_state"] == "Ветровое волнение"]
+        swell = self.data[self.data["sea_state"] == "Зыбь"]
+
+        plt.figure(figsize=(15, 5))
+
+        plt.scatter(
+            wind_sea["timestamp"], wind_sea["wave_age"],
+            s=10, color="tab:blue", alpha=0.6, label="Ветровое волнение"
+        )
+        plt.scatter(
+            swell["timestamp"], swell["wave_age"],
+            s=10, color="tab:orange", alpha=0.6, label="Зыбь"
+        )
+
+        plt.axhline(
+            self.wave_age_threshold,
+            color="black", linestyle="--", linewidth=1.5,
+            label=f"Порог зыби (c_p/U10 = {self.wave_age_threshold})"
+        )
+
+        plt.yscale("log")
+        plt.xlabel("Время")
+        plt.ylabel("Возраст волны (c_p / U10)")
+        plt.title("Возраст волны во времени")
+        plt.legend(loc="upper right")
+        plt.grid(True, alpha=0.3)
+        plt.gcf().autofmt_xdate()
+        plt.tight_layout()
+        plt.savefig(self.output_fig / "wave_age_timeseries.png", dpi=300)
+        plt.close()
+
+        print("✓ wave_age_timeseries.png")
+
+    def plot_sea_state_fraction(self):
+        print()
+        print("Plotting sea state fraction...")
+
+        fraction = (
+            self.data["sea_state"].value_counts(normalize=True) * 100
+        ).reindex(["Ветровое волнение", "Зыбь"]).fillna(0)
+
+        plt.figure(figsize=(6, 5))
+        bars = plt.bar(
+            fraction.index, fraction.values,
+            color=["tab:blue", "tab:orange"]
+        )
+
+        for bar, value in zip(bars, fraction.values):
+            plt.text(
+                bar.get_x() + bar.get_width() / 2, value + 1.5,
+                f"{value:.1f}%", ha="center"
+            )
+
+        plt.ylabel("Доля времени (%)")
+        plt.title("Доля ветрового волнения и зыби")
+        plt.ylim(0, 112)
+        plt.grid(True, axis="y", alpha=0.3)
+        plt.tight_layout()
+        plt.savefig(self.output_fig / "sea_state_fraction.png", dpi=300)
+        plt.close()
+
+        print("✓ sea_state_fraction.png")
 
     def save_summary(self):
         summary = pd.DataFrame(
@@ -994,6 +1112,22 @@ class WindWaveAnalysis:
 
         print()
 
+        if "sea_state" in self.data.columns:
+
+            swell_fraction = (
+                self.data["sea_state"].eq("Зыбь").mean() * 100
+            )
+
+            print(
+                f"Mean wave age (c_p/U10) : {self.data['wave_age'].mean():.2f}"
+            )
+
+            print(
+                f"Swell fraction          : {swell_fraction:.1f}%"
+            )
+
+            print()
+
         if (
             hasattr(self, "lag_table")
             and
@@ -1039,6 +1173,7 @@ class WindWaveAnalysis:
     def export_report(self):
 
         has_lag = not self.lag_table.empty
+        has_sea_state = "sea_state" in self.data.columns
 
         report = pd.DataFrame(
 
@@ -1072,7 +1207,11 @@ class WindWaveAnalysis:
 
                     "Mean storm correlation",
 
-                    "Maximum storm correlation"
+                    "Maximum storm correlation",
+
+                    "Mean wave age (cp/U10)",
+
+                    "Swell fraction (%)"
 
                 ],
 
@@ -1104,7 +1243,11 @@ class WindWaveAnalysis:
 
                     self.lag_table["correlation"].mean() if has_lag else np.nan,
 
-                    self.lag_table["correlation"].max() if has_lag else np.nan
+                    self.lag_table["correlation"].max() if has_lag else np.nan,
+
+                    self.data["wave_age"].mean() if has_sea_state else np.nan,
+
+                    self.data["sea_state"].eq("Зыбь").mean() * 100 if has_sea_state else np.nan
 
                 ]
 
@@ -1347,6 +1490,9 @@ class WindWaveAnalysis:
         self.compute_correlations()
         self.scatter_plot()
         self.correlation_matrix()
+        self.classify_sea_state()
+        self.plot_wave_age_timeseries()
+        self.plot_sea_state_fraction()
         self.classify_wind()
         self.energy_boxplot()
         self.beaufort_scale()
