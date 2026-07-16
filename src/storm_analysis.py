@@ -173,6 +173,15 @@ class StormAnalysis:
                 a:b + 1
             ]
 
+            # Report the peak period/frequency of the window where the
+            # storm was strongest, rather than max()/mean() across the
+            # whole event — a single mis-detected window would otherwise
+            # skew the reported "storm period" even though the energy
+            # itself is aggregated correctly.
+            peak_row = subset.loc[
+                subset.energy.idxmax()
+            ]
+
             rows.append({
 
                 "storm":
@@ -207,11 +216,11 @@ class StormAnalysis:
 
                 "peak_period":
 
-                    subset.peak_period.max(),
+                    peak_row.peak_period,
 
                 "peak_frequency":
 
-                    subset.peak_frequency.mean()
+                    peak_row.peak_frequency
 
             })
 
@@ -274,11 +283,15 @@ class StormAnalysis:
             "Plotting energy time series..."
         )
 
+        time = pd.to_datetime(self.statistics["timestamp"])
+
         plt.figure(
             figsize=(15,5)
         )
 
         plt.plot(
+
+            time,
 
             self.energy,
 
@@ -298,12 +311,12 @@ class StormAnalysis:
 
             linewidth=2,
 
-            label="Storm threshold"
+            label="Storm threshold (90th percentile)"
 
         )
 
         plt.xlabel(
-            "20-minute window"
+            "Time"
         )
 
         plt.ylabel(
@@ -317,6 +330,8 @@ class StormAnalysis:
         plt.grid(True)
 
         plt.legend()
+
+        plt.gcf().autofmt_xdate()
 
         plt.tight_layout()
 
@@ -345,17 +360,23 @@ class StormAnalysis:
             "Plotting detected storms..."
         )
 
+        time = pd.to_datetime(self.statistics["timestamp"])
+
         plt.figure(
             figsize=(15,5)
         )
 
         plt.plot(
 
+            time,
+
             self.energy,
 
             linewidth=1.2,
 
-            color="black"
+            color="black",
+
+            label="Wave energy"
 
         )
 
@@ -365,24 +386,30 @@ class StormAnalysis:
 
             color="red",
 
-            linestyle="--"
+            linestyle="--",
+
+            label="Storm threshold"
 
         )
 
-        for start, stop in self.events:
+        for j, (start, stop) in enumerate(self.events):
 
             plt.axvspan(
 
-                start,
+                time.iloc[start],
 
-                stop,
+                time.iloc[stop],
 
-                alpha=0.3
+                color="tab:blue",
+
+                alpha=0.3,
+
+                label="Detected storm" if j == 0 else None
 
             )
 
         plt.xlabel(
-            "20-minute window"
+            "Time"
         )
 
         plt.ylabel(
@@ -394,6 +421,10 @@ class StormAnalysis:
         )
 
         plt.grid(True)
+
+        plt.legend(loc="upper right")
+
+        plt.gcf().autofmt_xdate()
 
         plt.tight_layout()
 

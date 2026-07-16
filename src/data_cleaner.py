@@ -16,6 +16,7 @@ class DataCleaner:
         min_samples=2400,
         trim_minutes=5,
         sampling_rate=4,
+        pressure_margin=2.0,
     ):
 
         trim = trim_minutes * 60 * sampling_rate
@@ -65,6 +66,42 @@ class DataCleaner:
 
         print("\nУдалено коротких записей :", removed_short)
         print("Удалено при обрезке      :", removed_trim)
+        print("Осталось после обрезки   :", len(self.clean_df))
+
+        # -------------------------------------------------------
+        # Instrument-recovery / out-of-water artifact removal.
+        # When the logger is hauled out of the water (deployment
+        # start/end, mid-deployment checks), pressure drops to
+        # near-atmospheric — several dbar below the normal
+        # underwater reading. These samples are not real wave/tide
+        # data and, if left in, get mistaken for storms with
+        # absurd (near-zero-frequency) peak periods downstream.
+        # -------------------------------------------------------
+
+        removed_out_of_water = 0
+
+        if "pressure" in self.clean_df.columns and len(self.clean_df) > 0:
+
+            median_pressure = self.clean_df["pressure"].median()
+
+            pressure_threshold = median_pressure - pressure_margin
+
+            out_of_water = self.clean_df["pressure"] < pressure_threshold
+
+            removed_out_of_water = int(out_of_water.sum())
+
+            self.clean_df = (
+                self.clean_df
+                .loc[~out_of_water]
+                .reset_index(drop=True)
+            )
+
+            print(
+                f"Удалено (прибор не в воде, "
+                f"pressure < {pressure_threshold:.2f} dbar) : "
+                f"{removed_out_of_water}"
+            )
+
         print("Итого осталось           :", len(self.clean_df))
 
     def save(self):

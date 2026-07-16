@@ -122,6 +122,8 @@ class TemperatureAnalysis:
 
         plt.ylabel("Count")
 
+        plt.title("Temperature distribution")
+
         plt.tight_layout()
 
         plt.savefig(
@@ -141,10 +143,13 @@ class TemperatureAnalysis:
 
         plt.boxplot(
             self.df["temperature"],
-            vert=True
+            vert=True,
+            tick_labels=["Whole deployment"]
         )
 
         plt.ylabel("Temperature (°C)")
+
+        plt.title("Temperature distribution")
 
         plt.tight_layout()
 
@@ -222,6 +227,10 @@ class TemperatureAnalysis:
         )
 
         plt.title("Temperature gradient")
+
+        plt.xlabel("Time")
+
+        plt.ylabel("ΔT between samples (°C)")
 
         plt.tight_layout()
 

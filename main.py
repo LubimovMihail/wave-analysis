@@ -1,3 +1,4 @@
+from src.plotting_style import apply_style
 from src.reader import RBRReader
 from src.quality import QualityControl
 from src.preprocessing import DataPreparation
@@ -16,6 +17,8 @@ from src.inspector import RSKInspector
 from src.summary_statistics import SummaryStatistics
 
 def main():
+
+    apply_style()
 
     # =====================================================
     # Reading RBR file

@@ -66,6 +66,12 @@ class WavePreprocessor:
             label="Trend"
         )
 
+        plt.title("Pressure and slow (10-minute) trend")
+
+        plt.xlabel("Time")
+
+        plt.ylabel("Pressure (dbar)")
+
         plt.legend()
 
         plt.tight_layout()
@@ -86,7 +92,11 @@ class WavePreprocessor:
             sample["wave_pressure"]
         )
 
-        plt.title("Wave pressure")
+        plt.title("Wave pressure (trend removed)")
+
+        plt.xlabel("Time")
+
+        plt.ylabel("Pressure anomaly (dbar)")
 
         plt.tight_layout()
 

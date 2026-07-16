@@ -55,6 +55,11 @@ class WaveSpectra:
         self.fs = 4.0
         self.window_minutes = 20
 
+        # Lower bound of the wind-wave/swell band (Hz). Spectral energy
+        # below this frequency is tide/mooring-trend leakage, not surface
+        # gravity waves, and must be excluded before picking a "peak".
+        self.min_wave_frequency = 0.05
+
         self.window_samples = (
             self.window_minutes
             * 60
@@ -131,6 +136,34 @@ class WaveSpectra:
         print()
 
     # =====================================================
+    def dominant_index(
+        self,
+        psd,
+        frequency
+    ):
+        """
+        Index of the highest PSD value restricted to the
+        wind-wave/swell band (frequency >= min_wave_frequency).
+
+        The raw spectrum is dominated by tide/mooring-trend energy
+        at the lowest few frequency bins (near DC); a plain argmax
+        would lock onto that instead of the real wave peak.
+        """
+
+        valid = frequency >= self.min_wave_frequency
+
+        if not np.any(valid):
+            return int(np.argmax(psd[1:]) + 1)
+
+        candidate_indices = np.flatnonzero(valid)
+
+        return int(
+            candidate_indices[
+                np.argmax(psd[candidate_indices])
+            ]
+        )
+
+    # =====================================================
     def analyse_single_window(
         self,
         signal
@@ -146,9 +179,10 @@ class WaveSpectra:
             scaling="density"
         )
 
-        peak_index = np.argmax(
-            psd[1:]
-        ) + 1
+        peak_index = self.dominant_index(
+            psd,
+            frequency
+        )
 
         peak_frequency = frequency[peak_index]
         peak_period = (
@@ -243,10 +277,12 @@ class WaveSpectra:
 
     # =====================================================
     def dominant_wave(self):
-        # Find index of peak in mean PSD (excluding zero freq)
-        index = np.argmax(
-            self.mean_psd[1:]
-        ) + 1
+        # Find index of peak in mean PSD, restricted to the
+        # wind-wave/swell band (excludes tide/trend leakage).
+        index = self.dominant_index(
+            self.mean_psd,
+            self.frequency
+        )
 
         self.fp = self.frequency[index]
         self.tp = (
@@ -381,16 +417,25 @@ class WaveSpectra:
             self.mean_psd,
             linewidth=2
         )
-        # Mark the dominant frequency
+        # Mark the dominant wind-wave/swell frequency
+        dominant_idx = self.dominant_index(
+            self.mean_psd,
+            self.frequency
+        )
         plt.scatter(
             self.fp,
-            self.mean_psd[
-                np.argmax(
-                    self.mean_psd[1:]
-                ) + 1
-            ],
-            s=60,
-            zorder=5
+            self.mean_psd[dominant_idx],
+            s=80,
+            c="red",
+            zorder=5,
+            label=f"Peak: {self.tp:.1f} s ({self.fp:.3f} Hz)"
+        )
+        plt.axvspan(
+            0,
+            self.min_wave_frequency,
+            color="gray",
+            alpha=0.15,
+            label="Excluded (tide / trend leakage)"
         )
         plt.xlabel(
             "Frequency (Hz)"
@@ -401,6 +446,7 @@ class WaveSpectra:
         plt.title(
             "Mean Welch Spectrum"
         )
+        plt.legend(loc="upper right")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(
@@ -514,6 +560,14 @@ class WaveSpectra:
                 self.mean_psd
             ) * 0.05
         )
+
+        # Drop any peak in the tide/trend band — only wind-wave/swell
+        # frequencies are meaningful "spectral peaks" for this analysis.
+        keep = self.frequency[peaks] >= self.min_wave_frequency
+        peaks = peaks[keep]
+        for key in properties:
+            properties[key] = np.asarray(properties[key])[keep]
+
         self.peaks = peaks
         self.peak_properties = properties
         print(
@@ -533,14 +587,23 @@ class WaveSpectra:
         plt.semilogy(
             self.frequency,
             self.mean_psd,
-            linewidth=2
+            linewidth=2,
+            label="Mean spectrum"
         )
         plt.scatter(
             self.frequency[self.peaks],
             self.mean_psd[self.peaks],
-            s=40,
+            s=50,
             c="red",
-            zorder=5
+            zorder=5,
+            label="Detected peaks"
+        )
+        plt.axvspan(
+            0,
+            self.min_wave_frequency,
+            color="gray",
+            alpha=0.15,
+            label="Excluded (tide / trend leakage)"
         )
         plt.xlabel(
             "Frequency (Hz)"
@@ -551,6 +614,7 @@ class WaveSpectra:
         plt.title(
             "Detected Spectral Peaks"
         )
+        plt.legend(loc="upper right")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(
@@ -644,15 +708,17 @@ class WaveSpectra:
             for item in
             self.window_results
         ])
+        time = self.statistics_table["timestamp"]
         plt.figure(
             figsize=(14,5)
         )
         plt.plot(
+            time,
             energy,
             linewidth=1.5
         )
         plt.xlabel(
-            "20-minute window"
+            "Time"
         )
         plt.ylabel(
             "Integrated energy"
@@ -660,6 +726,7 @@ class WaveSpectra:
         plt.title(
             "Wave Energy Time Series"
         )
+        plt.gcf().autofmt_xdate()
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(
@@ -679,22 +746,27 @@ class WaveSpectra:
             for item in
             self.window_results
         ])
+        time = self.statistics_table["timestamp"]
         plt.figure(
             figsize=(14,5)
         )
         plt.plot(
+            time,
             periods,
-            linewidth=1.5
+            linewidth=1,
+            marker=".",
+            markersize=3
         )
         plt.xlabel(
-            "20-minute window"
+            "Time"
         )
         plt.ylabel(
             "Peak period (s)"
         )
         plt.title(
-            "Peak Wave Period"
+            "Peak Wave Period (wind-wave/swell band only)"
         )
+        plt.gcf().autofmt_xdate()
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(
@@ -714,22 +786,27 @@ class WaveSpectra:
             for item in
             self.window_results
         ])
+        time = self.statistics_table["timestamp"]
         plt.figure(
             figsize=(14,5)
         )
         plt.plot(
+            time,
             frequency,
-            linewidth=1.5
+            linewidth=1,
+            marker=".",
+            markersize=3
         )
         plt.xlabel(
-            "20-minute window"
+            "Time"
         )
         plt.ylabel(
             "Peak frequency (Hz)"
         )
         plt.title(
-            "Peak Wave Frequency"
+            "Peak Wave Frequency (wind-wave/swell band only)"
         )
+        plt.gcf().autofmt_xdate()
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(
