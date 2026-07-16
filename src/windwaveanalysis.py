@@ -208,15 +208,15 @@ class WindWaveAnalysis:
 
         fig, ax = plt.subplots(2, 1, figsize=(15, 8), sharex=True)
         ax[0].plot(self.data["datetime"], self.data["wind_speed"], lw=1.5)
-        ax[0].set_ylabel("Wind speed (m/s)")
+        ax[0].set_ylabel("Скорость ветра (м/с)")
         ax[0].grid(True)
-        ax[0].set_title("Wind speed")
+        ax[0].set_title("Скорость ветра")
 
         ax[1].plot(self.data["timestamp"], self.data["energy"], lw=1.5)
-        ax[1].set_ylabel("Wave energy")
-        ax[1].set_xlabel("Time")
+        ax[1].set_ylabel("Энергия волн (дбар²)")
+        ax[1].set_xlabel("Время")
         ax[1].grid(True)
-        ax[1].set_title("Wave energy")
+        ax[1].set_title("Энергия волн")
 
         plt.tight_layout()
         plt.savefig(self.output_fig / "wind_wave_timeseries.png", dpi=300)
@@ -276,7 +276,7 @@ class WindWaveAnalysis:
             coef = np.polyfit(x, np.log(y), 1)
             xx = np.linspace(x.min(), x.max(), 100)
             plt.plot(xx, np.exp(np.polyval(coef, xx)), linewidth=2, color="tab:red",
-                     label="Log-linear fit")
+                     label="Лог-линейная аппроксимация")
 
             fitted = np.polyval(coef, x)
             residual = np.log(y) - fitted
@@ -285,19 +285,19 @@ class WindWaveAnalysis:
             log_r2 = 1 - ss_res / ss_tot if ss_tot > 0 else np.nan
 
         r = self.correlation["pearson"]
-        title = "Wind vs Wave Energy"
+        title = "Ветер и энергия волн"
         subtitle_parts = []
         if np.isfinite(r):
-            subtitle_parts.append(f"linear R² = {r ** 2:.3f}")
+            subtitle_parts.append(f"линейный R² = {r ** 2:.3f}")
         if np.isfinite(log_r2):
-            subtitle_parts.append(f"log-linear R² = {log_r2:.3f}")
+            subtitle_parts.append(f"лог-линейный R² = {log_r2:.3f}")
         if subtitle_parts:
             title += "\n" + ", ".join(subtitle_parts)
-            title += "  (weak relationship — energy is driven by more than local wind)"
+            title += "  (слабая связь — энергия определяется не только локальным ветром)"
 
         plt.yscale("log")
-        plt.xlabel("Wind speed (m/s)")
-        plt.ylabel("Wave energy (log scale)")
+        plt.xlabel("Скорость ветра (м/с)")
+        plt.ylabel("Энергия волн (дбар², лог. шкала)")
         plt.title(title)
         plt.legend(loc="lower right")
         plt.grid(True, which="both", alpha=0.3)
@@ -326,10 +326,19 @@ class WindWaveAnalysis:
 
         matrix.to_csv(self.output_tab / "correlation_matrix.csv")
 
+        column_labels_ru = {
+            "wind_speed": "Скорость ветра",
+            "wind_direction": "Направление ветра",
+            "energy": "Энергия волн",
+            "peak_period": "Пиковый период",
+            "peak_frequency": "Пиковая частота",
+        }
+        display_labels = [column_labels_ru.get(c, c) for c in matrix.columns]
+
         plt.figure(figsize=(8, 7))
         image = plt.imshow(matrix, aspect="auto", cmap="coolwarm", vmin=-1, vmax=1)
-        plt.xticks(range(len(matrix.columns)), matrix.columns, rotation=45, ha="right")
-        plt.yticks(range(len(matrix.columns)), matrix.columns)
+        plt.xticks(range(len(matrix.columns)), display_labels, rotation=45, ha="right")
+        plt.yticks(range(len(matrix.columns)), display_labels)
 
         for i in range(len(matrix.columns)):
             for j in range(len(matrix.columns)):
@@ -341,9 +350,9 @@ class WindWaveAnalysis:
                     color=text_color, fontsize=10
                 )
 
-        plt.title("Wind / wave correlation matrix")
+        plt.title("Матрица корреляции ветра и волн")
         cbar = plt.colorbar(image)
-        cbar.set_label("Pearson correlation")
+        cbar.set_label("Корреляция Пирсона")
         plt.tight_layout()
         plt.savefig(self.output_fig / "correlation_matrix.png", dpi=300)
         plt.close()
@@ -663,7 +672,7 @@ class WindWaveAnalysis:
                 storm["corr"],
                 linewidth=2,
                 alpha=0.7,
-                label=f"Storm {storm['storm']}"
+                label=f"Шторм {storm['storm']}"
             )
 
         plt.axvline(
@@ -673,9 +682,9 @@ class WindWaveAnalysis:
             linewidth=2
         )
 
-        plt.xlabel("Lag (hours)")
-        plt.ylabel("Pearson correlation")
-        plt.title("Wind-wave lag for each storm")
+        plt.xlabel("Задержка (часы)")
+        plt.ylabel("Корреляция Пирсона")
+        plt.title("Задержка между ветром и волнами для каждого шторма")
 
         plt.grid(True)
 
@@ -744,8 +753,8 @@ class WindWaveAnalysis:
             common_lag,
             mean_corr,
             linewidth=3,
-            label="Mean correlation"
-        )   
+            label="Средняя корреляция"
+        )
 
         plt.fill_between(
             common_lag,
@@ -765,12 +774,12 @@ class WindWaveAnalysis:
             color="red",
             linestyle="--",
             linewidth=2,
-            label=f"Maximum = {self.mean_best_lag:.2f} h"
+            label=f"Максимум = {self.mean_best_lag:.2f} ч"
         )
 
-        plt.xlabel("Lag (hours)")
-        plt.ylabel("Pearson correlation")
-        plt.title("Mean storm lag")
+        plt.xlabel("Задержка (часы)")
+        plt.ylabel("Корреляция Пирсона")
+        plt.title("Средняя задержка по штормам")
 
         plt.grid(True)
 
@@ -808,24 +817,24 @@ class WindWaveAnalysis:
         fig, ax1 = plt.subplots(figsize=(15, 6))
         line1, = ax1.plot(
             self.data["datetime"], self.data["wind_speed"],
-            color=wind_color, linewidth=1.2, label="Wind speed"
+            color=wind_color, linewidth=1.2, label="Скорость ветра"
         )
-        ax1.set_ylabel("Wind speed (m/s)", color=wind_color)
+        ax1.set_ylabel("Скорость ветра (м/с)", color=wind_color)
         ax1.tick_params(axis="y", labelcolor=wind_color)
-        ax1.set_xlabel("Time")
+        ax1.set_xlabel("Время")
         ax1.grid(True, alpha=0.3)
 
         ax2 = ax1.twinx()
         line2, = ax2.plot(
             self.data["datetime"], self.data["energy"],
-            color=energy_color, linewidth=1.5, label="Wave energy"
+            color=energy_color, linewidth=1.5, label="Энергия волн"
         )
-        ax2.set_ylabel("Wave energy", color=energy_color)
+        ax2.set_ylabel("Энергия волн (дбар²)", color=energy_color)
         ax2.tick_params(axis="y", labelcolor=energy_color)
 
         ax1.legend(handles=[line1, line2], loc="upper right")
 
-        plt.title("Wind and wave energy")
+        plt.title("Ветер и энергия волн")
         fig.autofmt_xdate()
         fig.tight_layout()
         plt.savefig(self.output_fig / "wind_wave_comparison.png", dpi=300)
@@ -863,9 +872,9 @@ class WindWaveAnalysis:
         if groups:
             plt.boxplot(groups, tick_labels=labels, showfliers=False)
 
-        plt.xlabel("Wind speed (m/s)")
-        plt.ylabel("Wave energy")
-        plt.title("Wave energy vs wind speed")
+        plt.xlabel("Скорость ветра (м/с)")
+        plt.ylabel("Энергия волн (дбар²)")
+        plt.title("Энергия волн в зависимости от скорости ветра")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(self.output_fig / "energy_boxplot.png", dpi=300)
@@ -879,7 +888,7 @@ class WindWaveAnalysis:
 
         direction = (self.data["wind_direction"] % 360 + 22.5) % 360
         bins = np.arange(0, 361, 45)
-        labels = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        labels = ["С", "СВ", "В", "ЮВ", "Ю", "ЮЗ", "З", "СЗ"]
 
         self.data["wind_sector"] = pd.cut(
             direction,
@@ -904,9 +913,9 @@ class WindWaveAnalysis:
 
         plt.figure(figsize=(10, 5))
         plt.bar(table["wind_sector"].astype(str), table["energy"])
-        plt.xlabel("Wind direction")
-        plt.ylabel("Mean wave energy")
-        plt.title("Wave energy by wind direction")
+        plt.xlabel("Направление ветра")
+        plt.ylabel("Средняя энергия волн (дбар²)")
+        plt.title("Энергия волн по направлению ветра")
         plt.grid(True)
         plt.tight_layout()
         plt.savefig(self.output_fig / "energy_by_direction.png", dpi=300)
@@ -1139,19 +1148,19 @@ class WindWaveAnalysis:
             np.inf,
         ]
         names = [
-            "0 Calm",
-            "1 Light Air",
-            "2 Light Breeze",
-            "3 Gentle Breeze",
-            "4 Moderate Breeze",
-            "5 Fresh Breeze",
-            "6 Strong Breeze",
-            "7 Near Gale",
-            "8 Gale",
-            "9 Strong Gale",
-            "10 Storm",
-            "11 Violent Storm",
-            "12 Hurricane",
+            "0 Штиль",
+            "1 Тихий ветер",
+            "2 Лёгкий ветер",
+            "3 Слабый ветер",
+            "4 Умеренный ветер",
+            "5 Свежий ветер",
+            "6 Сильный ветер",
+            "7 Крепкий ветер",
+            "8 Очень крепкий ветер",
+            "9 Шторм",
+            "10 Сильный шторм",
+            "11 Жестокий шторм",
+            "12 Ураган",
         ]
 
         self.data["beaufort"] = pd.cut(
@@ -1175,9 +1184,9 @@ class WindWaveAnalysis:
         plt.figure(figsize=(12, 5))
         plt.bar(table["beaufort"].astype(str), table["mean_energy"], color="tab:blue")
         plt.xticks(rotation=45, ha="right")
-        plt.xlabel("Beaufort class")
-        plt.ylabel("Mean wave energy")
-        plt.title("Wave energy by Beaufort class")
+        plt.xlabel("Класс по шкале Бофорта")
+        plt.ylabel("Средняя энергия волн (дбар²)")
+        plt.title("Энергия волн по шкале Бофорта")
         plt.grid(True, axis="y", alpha=0.3)
         plt.tight_layout()
         plt.savefig(self.output_fig / "beaufort_energy.png", dpi=300)
@@ -1202,25 +1211,25 @@ class WindWaveAnalysis:
 
         line1, = ax1.plot(
             hourly.index, hourly["wind"],
-            linewidth=2, color=wind_color, label="Wind speed"
+            linewidth=2, color=wind_color, label="Скорость ветра"
         )
-        ax1.set_ylabel("Wind speed (m/s)", color=wind_color)
+        ax1.set_ylabel("Скорость ветра (м/с)", color=wind_color)
         ax1.tick_params(axis="y", labelcolor=wind_color)
-        ax1.set_xlabel("Hour of day")
+        ax1.set_xlabel("Час суток")
         ax1.set_xticks(range(0, 24, 2))
         ax1.grid(True, alpha=0.3)
 
         ax2 = ax1.twinx()
         line2, = ax2.plot(
             hourly.index, hourly["energy"],
-            linewidth=2, color=energy_color, label="Wave energy"
+            linewidth=2, color=energy_color, label="Энергия волн"
         )
-        ax2.set_ylabel("Wave energy", color=energy_color)
+        ax2.set_ylabel("Энергия волн (дбар²)", color=energy_color)
         ax2.tick_params(axis="y", labelcolor=energy_color)
 
         ax1.legend(handles=[line1, line2], loc="upper right")
 
-        plt.title("Average diurnal cycle")
+        plt.title("Средний суточный цикл")
         plt.tight_layout()
         plt.savefig(self.output_fig / "diurnal_cycle.png", dpi=300)
         plt.close(fig)
@@ -1262,7 +1271,7 @@ class WindWaveAnalysis:
         ax.set_theta_zero_location("N")
         ax.set_theta_direction(-1)
         ax.set_rlabel_position(135)
-        ax.set_title("Wind Rose — mean wind speed by direction (m/s)")
+        ax.set_title("Роза ветров — средняя скорость ветра по направлениям (м/с)")
 
         plt.tight_layout()
         plt.savefig(self.output_fig / "wind_rose.png", dpi=300)
@@ -1299,7 +1308,7 @@ class WindWaveAnalysis:
         ax.set_theta_zero_location("N")
         ax.set_theta_direction(-1)
         ax.set_rlabel_position(135)
-        ax.set_title("Wave energy by wind direction (mean energy)")
+        ax.set_title("Энергия волн по направлению ветра (средняя энергия, дбар²)")
 
         plt.tight_layout()
         plt.savefig(self.output_fig / "wave_energy_rose.png", dpi=300)

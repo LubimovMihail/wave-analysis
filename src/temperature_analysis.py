@@ -50,11 +50,11 @@ class TemperatureAnalysis:
             linewidth=0.4
         )
 
-        plt.title("Temperature during deployment")
+        plt.title("Температура за период наблюдений")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Temperature (°C)")
+        plt.ylabel("Температура (°C)")
 
         plt.tight_layout()
 
@@ -86,11 +86,11 @@ class TemperatureAnalysis:
             linewidth=2
         )
 
-        plt.title("Hourly averaged temperature")
+        plt.title("Среднечасовая температура")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Temperature (°C)")
+        plt.ylabel("Температура (°C)")
 
         plt.tight_layout()
 
@@ -118,11 +118,11 @@ class TemperatureAnalysis:
             bins=40
         )
 
-        plt.xlabel("Temperature (°C)")
+        plt.xlabel("Температура (°C)")
 
-        plt.ylabel("Count")
+        plt.ylabel("Количество")
 
-        plt.title("Temperature distribution")
+        plt.title("Распределение температуры")
 
         plt.tight_layout()
 
@@ -144,12 +144,12 @@ class TemperatureAnalysis:
         plt.boxplot(
             self.df["temperature"],
             vert=True,
-            tick_labels=["Whole deployment"]
+            tick_labels=["Весь период"]
         )
 
-        plt.ylabel("Temperature (°C)")
+        plt.ylabel("Температура (°C)")
 
-        plt.title("Temperature distribution")
+        plt.title("Распределение температуры")
 
         plt.tight_layout()
 
@@ -187,11 +187,11 @@ class TemperatureAnalysis:
 
         plt.xticks(range(24))
 
-        plt.xlabel("Hour")
+        plt.xlabel("Час")
 
-        plt.ylabel("Temperature (°C)")
+        plt.ylabel("Температура (°C)")
 
-        plt.title("Mean daily cycle")
+        plt.title("Средний суточный цикл")
 
         plt.grid(True)
 
@@ -226,11 +226,11 @@ class TemperatureAnalysis:
             linewidth=0.4
         )
 
-        plt.title("Temperature gradient")
+        plt.title("Градиент температуры")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("ΔT between samples (°C)")
+        plt.ylabel("ΔT между отсчётами (°C)")
 
         plt.tight_layout()
 

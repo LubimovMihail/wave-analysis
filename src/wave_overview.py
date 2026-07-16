@@ -74,11 +74,11 @@ class WaveAnalysis:
             lw=0.5
         )
 
-        plt.title("Pressure during deployment")
+        plt.title("Давление за период наблюдений")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure (dbar)")
+        plt.ylabel("Давление (дбар)")
 
         plt.grid(True)
 
@@ -117,12 +117,12 @@ class WaveAnalysis:
         )
 
         plt.title(
-            f"Pressure ({minutes} min)"
+            f"Давление ({minutes} мин)"
         )
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure (dbar)")
+        plt.ylabel("Давление (дбар)")
 
         plt.grid(True)
 
@@ -181,11 +181,11 @@ class WaveAnalysis:
             lw=1
         )
 
-        plt.title("Wave pressure")
+        plt.title("Волновое давление")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure anomaly (dbar)")
+        plt.ylabel("Аномалия давления (дбар)")
 
         plt.grid(True)
 

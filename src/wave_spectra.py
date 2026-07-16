@@ -428,23 +428,23 @@ class WaveSpectra:
             s=80,
             c="red",
             zorder=5,
-            label=f"Peak: {self.tp:.1f} s ({self.fp:.3f} Hz)"
+            label=f"Пик: {self.tp:.1f} с ({self.fp:.3f} Гц)"
         )
         plt.axvspan(
             0,
             self.min_wave_frequency,
             color="gray",
             alpha=0.15,
-            label="Excluded (tide / trend leakage)"
+            label="Исключено (влияние прилива/тренда)"
         )
         plt.xlabel(
-            "Frequency (Hz)"
+            "Частота (Гц)"
         )
         plt.ylabel(
-            "PSD"
+            "СПМ (дбар²/Гц)"
         )
         plt.title(
-            "Mean Welch Spectrum"
+            "Средний спектр Уэлча"
         )
         plt.legend(loc="upper right")
         plt.grid(True)
@@ -488,13 +488,13 @@ class WaveSpectra:
             1
         )
         plt.xlabel(
-            "Frequency (Hz)"
+            "Частота (Гц)"
         )
         plt.ylabel(
-            "Amplitude"
+            "Амплитуда (дбар)"
         )
         plt.title(
-            "FFT Spectrum"
+            "Спектр БПФ"
         )
         plt.grid(True)
         plt.tight_layout()
@@ -528,13 +528,13 @@ class WaveSpectra:
             linewidth=2
         )
         plt.xlabel(
-            "Frequency (Hz)"
+            "Частота (Гц)"
         )
         plt.ylabel(
-            "Normalized energy"
+            "Нормированная энергия"
         )
         plt.title(
-            "Cumulative Spectral Energy"
+            "Накопленная спектральная энергия"
         )
         plt.grid(True)
         plt.tight_layout()
@@ -588,7 +588,7 @@ class WaveSpectra:
             self.frequency,
             self.mean_psd,
             linewidth=2,
-            label="Mean spectrum"
+            label="Средний спектр"
         )
         plt.scatter(
             self.frequency[self.peaks],
@@ -596,23 +596,23 @@ class WaveSpectra:
             s=50,
             c="red",
             zorder=5,
-            label="Detected peaks"
+            label="Обнаруженные пики"
         )
         plt.axvspan(
             0,
             self.min_wave_frequency,
             color="gray",
             alpha=0.15,
-            label="Excluded (tide / trend leakage)"
+            label="Исключено (влияние прилива/тренда)"
         )
         plt.xlabel(
-            "Frequency (Hz)"
+            "Частота (Гц)"
         )
         plt.ylabel(
-            "PSD"
+            "СПМ (дбар²/Гц)"
         )
         plt.title(
-            "Detected Spectral Peaks"
+            "Обнаруженные спектральные пики"
         )
         plt.legend(loc="upper right")
         plt.grid(True)
@@ -718,13 +718,13 @@ class WaveSpectra:
             linewidth=1.5
         )
         plt.xlabel(
-            "Time"
+            "Время"
         )
         plt.ylabel(
-            "Integrated energy"
+            "Интегральная энергия (дбар²)"
         )
         plt.title(
-            "Wave Energy Time Series"
+            "Временной ряд энергии волн"
         )
         plt.gcf().autofmt_xdate()
         plt.grid(True)
@@ -758,13 +758,13 @@ class WaveSpectra:
             markersize=3
         )
         plt.xlabel(
-            "Time"
+            "Время"
         )
         plt.ylabel(
-            "Peak period (s)"
+            "Пиковый период (с)"
         )
         plt.title(
-            "Peak Wave Period (wind-wave/swell band only)"
+            "Пиковый период волн (только ветровые волны/зыбь)"
         )
         plt.gcf().autofmt_xdate()
         plt.grid(True)
@@ -798,13 +798,13 @@ class WaveSpectra:
             markersize=3
         )
         plt.xlabel(
-            "Time"
+            "Время"
         )
         plt.ylabel(
-            "Peak frequency (Hz)"
+            "Пиковая частота (Гц)"
         )
         plt.title(
-            "Peak Wave Frequency (wind-wave/swell band only)"
+            "Пиковая частота волн (только ветровые волны/зыбь)"
         )
         plt.gcf().autofmt_xdate()
         plt.grid(True)
@@ -836,13 +836,13 @@ class WaveSpectra:
             linewidth=0.8
         )
         plt.xlabel(
-            "Time (s)"
+            "Время (с)"
         )
         plt.ylabel(
-            "Pressure anomaly (dbar)"
+            "Аномалия давления (дбар)"
         )
         plt.title(
-            f"Window {index + 1}"
+            f"Окно {index + 1}"
         )
         plt.grid(True)
         plt.tight_layout()
@@ -866,21 +866,21 @@ class WaveSpectra:
         plt.semilogy(
             self.window_results[0]["frequency"],
             self.window_results[0]["psd"],
-            label="First window"
+            label="Первое окно"
         )
         plt.semilogy(
             self.window_results[-1]["frequency"],
             self.window_results[-1]["psd"],
-            label="Last window"
+            label="Последнее окно"
         )
         plt.xlabel(
-            "Frequency (Hz)"
+            "Частота (Гц)"
         )
         plt.ylabel(
-            "PSD"
+            "СПМ (дбар²/Гц)"
         )
         plt.title(
-            "First vs Last Spectrum"
+            "Сравнение первого и последнего спектра"
         )
         plt.grid(True)
         plt.legend()

@@ -64,11 +64,11 @@ class QualityControl:
             linewidth=0.3
         )
 
-        plt.title("Temperature")
+        plt.title("Температура")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Temperature (°C)")
+        plt.ylabel("Температура (°C)")
 
         plt.tight_layout()
 
@@ -89,11 +89,11 @@ class QualityControl:
             linewidth=0.3
         )
 
-        plt.title("Pressure")
+        plt.title("Давление")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure (dbar)")
+        plt.ylabel("Давление (дбар)")
 
         plt.tight_layout()
 

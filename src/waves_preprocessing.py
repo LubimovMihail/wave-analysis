@@ -56,21 +56,21 @@ class WavePreprocessor:
         plt.plot(
             sample["timestamp"],
             sample["pressure"],
-            label="Pressure"
+            label="Давление"
         )
 
         plt.plot(
             sample["timestamp"],
             sample["trend"],
             linewidth=2,
-            label="Trend"
+            label="Тренд"
         )
 
-        plt.title("Pressure and slow (10-minute) trend")
+        plt.title("Давление и медленный (10-минутный) тренд")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure (dbar)")
+        plt.ylabel("Давление (дбар)")
 
         plt.legend()
 
@@ -92,11 +92,11 @@ class WavePreprocessor:
             sample["wave_pressure"]
         )
 
-        plt.title("Wave pressure (trend removed)")
+        plt.title("Волновое давление (без тренда)")
 
-        plt.xlabel("Time")
+        plt.xlabel("Время")
 
-        plt.ylabel("Pressure anomaly (dbar)")
+        plt.ylabel("Аномалия давления (дбар)")
 
         plt.tight_layout()
 

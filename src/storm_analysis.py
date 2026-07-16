@@ -297,7 +297,7 @@ class StormAnalysis:
 
             linewidth=1.2,
 
-            label="Wave energy"
+            label="Энергия волн"
 
         )
 
@@ -311,20 +311,20 @@ class StormAnalysis:
 
             linewidth=2,
 
-            label="Storm threshold (90th percentile)"
+            label="Штормовой порог (90-й процентиль)"
 
         )
 
         plt.xlabel(
-            "Time"
+            "Время"
         )
 
         plt.ylabel(
-            "Integrated spectral energy"
+            "Интегральная спектральная энергия (дбар²)"
         )
 
         plt.title(
-            "Wave energy"
+            "Энергия волн"
         )
 
         plt.grid(True)
@@ -376,7 +376,7 @@ class StormAnalysis:
 
             color="black",
 
-            label="Wave energy"
+            label="Энергия волн"
 
         )
 
@@ -388,7 +388,7 @@ class StormAnalysis:
 
             linestyle="--",
 
-            label="Storm threshold"
+            label="Штормовой порог"
 
         )
 
@@ -404,20 +404,20 @@ class StormAnalysis:
 
                 alpha=0.3,
 
-                label="Detected storm" if j == 0 else None
+                label="Обнаруженный шторм" if j == 0 else None
 
             )
 
         plt.xlabel(
-            "Time"
+            "Время"
         )
 
         plt.ylabel(
-            "Energy"
+            "Энергия (дбар²)"
         )
 
         plt.title(
-            "Detected storm events"
+            "Обнаруженные штормовые события"
         )
 
         plt.grid(True)
@@ -466,15 +466,15 @@ class StormAnalysis:
         )
 
         plt.xlabel(
-            "Maximum storm energy"
+            "Максимальная энергия шторма (дбар²)"
         )
 
         plt.ylabel(
-            "Count"
+            "Количество"
         )
 
         plt.title(
-            "Storm energy distribution"
+            "Распределение энергии штормов"
         )
 
         plt.grid(True)
