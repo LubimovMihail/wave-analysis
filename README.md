@@ -1,27 +1,47 @@
 # Wave Analysis
 
-Пайплайн для обработки данных с **RBR** (`.rsk`) и анализа морского волнения: от сырых измерений давления/температуры до спектрального анализа волн, детекции штормов и сопоставления с ветром.
+🇷🇺 [Русская версия](README.ru.md)
 
-Загружаешь свой `.rsk`-файл — программа сама строит графики, таблицы и отчёты.
+A Python pipeline for processing data from **RBR** bottom pressure loggers (`.rsk` files) and analysing sea waves: from raw pressure and temperature records to wave spectra, storm detection and comparison with local wind.
 
-## Что делает пайплайн
+Put your `.rsk` file in, and the program builds the figures, tables and reports by itself.
 
-1. **Чтение** `.rsk`-файла (`RBRReader`)
-2. **Контроль качества** данных (`QualityControl`)
-3. **Предобработка** — вычисление давления/глубины (`DataPreparation`)
-4. **Поиск пропусков** во временном ряду (`GapDetector`)
-5. **Сегментация** ряда по разрывам (`Segmenter`)
-6. **Очистка** сегментов (`DataCleaner`)
-7. **Препроцессинг волн** — тренд, волновое давление (`WavePreprocessor`)
-8. **Общий обзор волнения** (`WaveAnalysis`)
-9. **Спектральный анализ** волн (`WaveSpectra`)
-10. **Детекция и анализ штормов** (`StormAnalysis`)
-11. **Сопоставление ветра и волн** (`WindWaveAnalysis`)
-12. **Анализ температуры** (`TemperatureAnalysis`)
-13. **Информация о приборе** (`RSKInspector`)
-14. **Итоговая статистика** по всему проекту (`SummaryStatistics`)
+I wrote it during my field practice as an oceanology student at Lomonosov Moscow State University, to process our own measurements of coastal waves.
 
-## Установка
+## Example results
+
+The figures below come from a 16-day record (June 2026) of an RBRduo³ logger installed at about 6 m depth in Golubaya Bay, Black Sea, sampling at 4 Hz (≈5.5 million measurements).
+
+**Wave spectrum.** The mean spectrum shows a clear peak at a period of about 6.2 s. Frequencies below 0.05 Hz (tide and slow trend) are excluded before searching for the wave peak.
+
+![Mean wave spectrum](docs/figures/mean_spectrum.png)
+
+**Storm detection.** Wave energy is computed in 20-minute windows. Windows above the 90th percentile are marked as storms. The program found 20 storm events, and the longest lasted about 10 hours.
+
+![Detected storm events](docs/figures/storm_events.png)
+
+**Wind and waves.** The correlation between local wind speed and wave energy is weak (Pearson r ≈ 0.20). The wave-age analysis (c_p / U10) classifies almost all windows as swell, so the waves at this site were mostly generated far away and not by the local wind.
+
+![Local wind vs wave energy](docs/figures/wind_vs_waves.png)
+
+## Pipeline steps
+
+1. **Reading** the `.rsk` file (`RBRReader`)
+2. **Quality control** of the raw data (`QualityControl`)
+3. **Preprocessing**: pressure and depth (`DataPreparation`)
+4. **Gap detection** in the time series (`GapDetector`)
+5. **Segmentation** of the record at gaps (`Segmenter`)
+6. **Cleaning** of the segments (`DataCleaner`)
+7. **Wave preprocessing**: slow trend removal, wave pressure (`WavePreprocessor`)
+8. **Wave overview** (`WaveAnalysis`)
+9. **Spectral analysis** of waves, Welch method (`WaveSpectra`)
+10. **Storm detection and analysis** (`StormAnalysis`)
+11. **Wind–wave comparison** and wave age (`WindWaveAnalysis`)
+12. **Temperature analysis** (`TemperatureAnalysis`)
+13. **Instrument information** (`RSKInspector`)
+14. **Summary statistics** for the whole project (`SummaryStatistics`)
+
+## Installation
 
 ```bash
 python -m venv .venv
@@ -29,35 +49,40 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Использование
+## Usage
 
-1. Положи свой `.rsk`-файл в `data/raw/`.
-2. При необходимости — CSV с данными ветра в `data/wind/wind.csv`.
-3. Укажи путь к файлам в `main.py`.
-4. Запусти:
+1. Put your `.rsk` file in `data/raw/`.
+2. Optionally, put a CSV with wind data in `data/wind/wind.csv`.
+3. Set the file paths in `main.py`.
+4. Run:
 
 ```bash
 python main.py
 ```
 
-Результаты (графики, таблицы, отчёты) появятся в папке `output/`.
+The results (figures, tables, reports) will appear in the `output/` folder.
 
-## Структура проекта
+## Project structure
 
 ```
-main.py                 — точка входа, запускает весь пайплайн
-src/                     — модули обработки и анализа
+main.py                 — entry point, runs the whole pipeline
+src/                    — processing and analysis modules
 data/
-  raw/                   — исходные .rsk файлы (не публикуются)
-  processed/             — промежуточные CSV
-  wind/                   — данные о ветре
+  raw/                  — source .rsk files (not published)
+  processed/            — intermediate CSV files
+  wind/                 — wind data
 output/
-  figures/               — графики
-  tables/                — таблицы (CSV)
-  reports/               — отчёты
-  logs/                  — логи
+  figures/              — figures
+  tables/               — tables (CSV)
+  reports/              — reports
+  logs/                 — logs
+docs/figures/           — example figures for this README
 ```
 
-## Требования
+## Requirements
 
-См. `requirements.txt`: numpy, pandas, matplotlib, scipy, tqdm, pyrsktools.
+Python 3, with numpy, pandas, matplotlib, scipy, tqdm and pyrsktools (see `requirements.txt`).
+
+## Author
+
+Mikhail Lyubimov, oceanology student, Faculty of Geography, Lomonosov Moscow State University.
